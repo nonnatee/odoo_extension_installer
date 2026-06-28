@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_extension_installation_history_admin,extension_installation_history_admin,model_extension_installation_history,base.group_system,1,1,1,1
+access_extension_install_wizard_admin,extension_install_wizard_admin,model_extension_install_wizard,base.group_system,1,1,1,1

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_extension_installation_history_tree" model="ir.ui.view">
+        <field name="name">extension.installation.history.tree</field>
+        <field name="model">extension.installation.history</field>
+        <field name="arch" type="xml">
+            <tree string="Installation History" create="false" edit="false" delete="false">
+                <field name="install_date"/>
+                <field name="name"/>
+                <field name="display_name_module"/>
+                <field name="version"/>
+                <field name="source_type"/>
+                <field name="source_url"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="status" widget="badge" decoration-success="status == 'success'" decoration-warning="status == 'restart_pending'" decoration-danger="status == 'failed'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_extension_installation_history_form" model="ir.ui.view">
+        <field name="name">extension.installation.history.form</field>
+        <field name="model">extension.installation.history</field>
+        <field name="arch" type="xml">
+            <form string="Installation History Details" create="false" edit="false" delete="false">
+                <header>
+                    <button name="action_restart_server" string="Restart Odoo Server" type="object" class="btn-primary" invisible="status != 'restart_pending'"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Module Information">
+                            <field name="name"/>
+                            <field name="display_name_module"/>
+                            <field name="version"/>
+                        </group>
+                        <group string="Source &amp; Context">
+                            <field name="source_type"/>
+                            <field name="source_url"/>
+                            <field name="install_date"/>
+                            <field name="user_id"/>
+                        </group>
+                    </group>
+                    <group string="Backup &amp; Logs">
+                        <field name="backup_path"/>
+                        <field name="failure_reason" invisible="not failure_reason"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_extension_installation_history" model="ir.actions.act_window">
+        <field name="name">Installation History</field>
+        <field name="res_model">extension.installation.history</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No third-party extension installations recorded yet.
+            </p>
+            <p>
+                Use the "Install Extension" wizard to download or upload open source modules.
+            </p>
+        </field>
+    </record>
+</odoo>

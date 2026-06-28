@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.odoo_extension_installer</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="90"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app string="Extension Installer" name="odoo_extension_installer">
+                    <block title="Target Path" name="target_path_block">
+                        <setting string="Target Addons Directory" help="Select the directory in your addons_path where third-party modules will be extracted. Ensure the Odoo server has write permissions to this directory.">
+                            <div class="content-group">
+                                <div class="mt16">
+                                    <field name="extension_target_addons_path" required="1" class="w-100"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Server Restart" name="server_restart_block">
+                        <setting string="Restart Command" help="Define a shell command to restart Odoo after installation (e.g. 'docker restart odoo-container' or 'sudo systemctl restart odoo').">
+                            <div class="content-group">
+                                <div class="mt16">
+                                    <field name="extension_restart_command" placeholder="docker restart odoo" class="w-100"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_extension_installer_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'odoo_extension_installer'}</field>
+    </record>
+</odoo>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Root Menu under Administration/Settings -->
+    <menuitem id="menu_extension_installer_root"
+              name="Extension Installer"
+              parent="base.menu_administration"
+              groups="base.group_system"
+              sequence="90"/>
+
+    <!-- Action to open wizard directly -->
+    <menuitem id="menu_action_extension_install_wizard"
+              name="Install Module"
+              parent="menu_extension_installer_root"
+              action="action_extension_install_wizard"
+              sequence="10"/>
+
+    <!-- Action to open history list -->
+    <menuitem id="menu_action_extension_installation_history"
+              name="Installation History"
+              parent="menu_extension_installer_root"
+              action="action_extension_installation_history"
+              sequence="20"/>
+
+    <!-- Action to open settings -->
+    <menuitem id="menu_action_extension_installer_settings"
+              name="Settings"
+              parent="menu_extension_installer_root"
+              action="action_extension_installer_settings"
+              sequence="30"/>
+</odoo>
