@@ -15,8 +15,8 @@ This module allows Odoo administrators to:
 - View a history log of installations.
 - Configure and execute a custom shell command to restart the Odoo server.
     """,
-    'author': 'Antigravity',
-    'website': 'https://github.com/google-deepmind',
+    'author': 'Nonnatee Kanjana',
+    'website': 'https://github.com/nonnatee/odoo_extension_installer',
     'depends': ['base', 'web'],
     'data': [
         'security/ir.model.access.csv',
