@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_extension_app_install_confirm_form" model="ir.ui.view">
+        <field name="name">extension.app.install.confirm.form</field>
+        <field name="model">extension.app.install.confirm</field>
+        <field name="arch" type="xml">
+            <form string="Confirm Installation">
+                <sheet>
+                    <field name="has_git" invisible="1"/>
+                    <field name="installation_success" invisible="1"/>
+                    
+                    <div class="oe_title">
+                        <h2>
+                            <field name="name" class="oe_inline"/>
+                            <small class="text-muted"> (<code><field name="tech_name" class="oe_inline"/></code>)</small>
+                        </h2>
+                    </div>
+                    
+                    <group invisible="installation_success">
+                        <field name="status_message" widget="html" nolabel="1"/>
+                    </group>
+                    
+                    <group invisible="not installation_success">
+                        <field name="status_message" widget="html" nolabel="1"/>
+                        <field name="installed_log" readonly="1" string="Installed Modules Detail" class="w-100" style="font-family: monospace; white-space: pre-wrap;"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <!-- Prior to Install State -->
+                    <t invisible="installation_success">
+                        <button name="action_confirm_install" string="Confirm Install" type="object" class="btn-primary" invisible="not has_git"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel" invisible="not has_git"/>
+                        <button string="Close" class="btn-primary" special="cancel" invisible="has_git"/>
+                    </t>
+                    
+                    <!-- After Successful Install State -->
+                    <t invisible="not installation_success">
+                        <button name="action_restart_server" string="Restart Odoo Server" type="object" class="btn-primary"/>
+                        <button string="Close" class="btn-secondary" special="cancel"/>
+                    </t>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

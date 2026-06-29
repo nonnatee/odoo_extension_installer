@@ -7,6 +7,13 @@
               groups="base.group_system"
               sequence="90"/>
 
+    <!-- Action to open App Browser -->
+    <menuitem id="menu_action_extension_app_browser"
+              name="App Store Browser"
+              parent="menu_extension_installer_root"
+              action="action_extension_app_browser"
+              sequence="5"/>
+
     <!-- Action to open wizard directly -->
     <menuitem id="menu_action_extension_install_wizard"
               name="Install Module"

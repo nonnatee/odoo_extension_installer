@@ -36,7 +36,6 @@
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">res.config.settings</field>
         <field name="view_mode">form</field>
-        <field name="target">inline</field>
         <field name="context">{'module': 'odoo_extension_installer'}</field>
     </record>
 </odoo>

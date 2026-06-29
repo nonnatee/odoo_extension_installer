@@ -23,7 +23,10 @@ This module allows Odoo administrators to:
         'views/res_config_settings_views.xml',
         'views/extension_history_views.xml',
         'wizard/extension_install_wizard_views.xml',
+        'views/extension_app_views.xml',
+        'wizard/extension_app_install_confirm_views.xml',
         'views/menus.xml',
+
     ],
     'installable': True,
     'application': True,
