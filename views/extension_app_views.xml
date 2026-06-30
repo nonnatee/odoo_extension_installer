@@ -43,7 +43,7 @@
                 <field name="downloads_str"/>
                 <field name="price"/>
                 <templates>
-                    <t t-name="kanban-box">
+                    <t t-name="card">
                         <div class="oe_kanban_global_click d-flex flex-column justify-content-between p-3 border rounded shadow-sm bg-white" style="height: 180px; transition: transform 0.2s, box-shadow 0.2s; min-width: 250px;">
                             <div class="d-flex align-items-start gap-3">
                                 <!-- App Icon -->
