@@ -31,6 +31,8 @@ class ResConfigSettings(models.TransientModel):
             addons_paths = []
         options = []
         for path in addons_paths:
+            if not isinstance(path, str):
+                continue
             path = path.strip()
             if not path:
                 continue

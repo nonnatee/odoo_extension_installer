@@ -96,8 +96,8 @@ class TestExtensionInstaller(TransactionCase):
             self.assertEqual(options[0][0], os.path.normpath('/opt/odoo/addons'))
             self.assertEqual(options[1][0], os.path.normpath('/var/lib/odoo/custom'))
             
-        # Scenario 2: config returns a list
-        with patch.object(config, 'get', return_value=['/opt/odoo/addons', '/var/lib/odoo/custom']):
+        # Scenario 2: config returns a list (including non-string safety check)
+        with patch.object(config, 'get', return_value=['/opt/odoo/addons', None, 123, '/var/lib/odoo/custom']):
             options = settings._get_addons_path_options()
             self.assertEqual(len(options), 2)
             self.assertEqual(options[0][0], os.path.normpath('/opt/odoo/addons'))
@@ -107,4 +107,5 @@ class TestExtensionInstaller(TransactionCase):
         with patch.object(config, 'get', return_value=None):
             options = settings._get_addons_path_options()
             self.assertEqual(options, [('', 'No addons path detected')])
+
 
