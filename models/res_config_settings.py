@@ -20,10 +20,15 @@ class ResConfigSettings(models.TransientModel):
 
     @api.model
     def _get_addons_path_options(self):
-        paths_str = config.get('addons_path', '')
-        # In Windows, config.get('addons_path') might use comma separator
-        # e.g., 'c:\odoo\odoo\addons,c:\odoo\addons'
-        addons_paths = paths_str.split(',')
+        paths_raw = config.get('addons_path', '')
+        if isinstance(paths_raw, (list, tuple)):
+            addons_paths = paths_raw
+        elif isinstance(paths_raw, str):
+            # In Windows, config.get('addons_path') might use comma separator
+            # e.g., 'c:\odoo\odoo\addons,c:\odoo\addons'
+            addons_paths = paths_raw.split(',')
+        else:
+            addons_paths = []
         options = []
         for path in addons_paths:
             path = path.strip()

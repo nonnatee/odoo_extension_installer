@@ -81,3 +81,30 @@ class TestExtensionInstaller(TransactionCase):
         with zipfile.ZipFile(full_backup_path, 'r') as z:
             namelist = z.namelist()
             self.assertIn('dummy_file.txt', namelist, "Backup ZIP does not contain target files.")
+
+    def test_get_addons_path_options(self):
+        """Test _get_addons_path_options handling string, list, and invalid config types."""
+        from unittest.mock import patch
+        from odoo.tools import config
+        
+        settings = self.env['res.config.settings'].create({})
+        
+        # Scenario 1: config returns a string
+        with patch.object(config, 'get', return_value='/opt/odoo/addons,/var/lib/odoo/custom'):
+            options = settings._get_addons_path_options()
+            self.assertEqual(len(options), 2)
+            self.assertEqual(options[0][0], os.path.normpath('/opt/odoo/addons'))
+            self.assertEqual(options[1][0], os.path.normpath('/var/lib/odoo/custom'))
+            
+        # Scenario 2: config returns a list
+        with patch.object(config, 'get', return_value=['/opt/odoo/addons', '/var/lib/odoo/custom']):
+            options = settings._get_addons_path_options()
+            self.assertEqual(len(options), 2)
+            self.assertEqual(options[0][0], os.path.normpath('/opt/odoo/addons'))
+            self.assertEqual(options[1][0], os.path.normpath('/var/lib/odoo/custom'))
+
+        # Scenario 3: config returns an empty/invalid type
+        with patch.object(config, 'get', return_value=None):
+            options = settings._get_addons_path_options()
+            self.assertEqual(options, [('', 'No addons path detected')])
+
