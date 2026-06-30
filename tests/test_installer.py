@@ -108,4 +108,30 @@ class TestExtensionInstaller(TransactionCase):
             options = settings._get_addons_path_options()
             self.assertEqual(options, [('', 'No addons path detected')])
 
+    def test_get_odoo_series(self):
+        """Test that get_odoo_series parses various Odoo release version string formats correctly."""
+        from unittest.mock import patch
+        import sys
+        
+        # We patch odoo.release inside sys.modules or mock the attribute
+        import odoo
+        app_model = self.env['extension.app']
+        
+        # Test standard major version
+        with patch('odoo.release.version', '18.0'):
+            self.assertEqual(app_model.get_odoo_series(), '18.0')
+            
+        # Test SaaS version format
+        with patch('odoo.release.version', 'saas~18.3'):
+            self.assertEqual(app_model.get_odoo_series(), '18.0')
+            
+        # Test older SaaS version format
+        with patch('odoo.release.version', '7.saas~3.1.0'):
+            self.assertEqual(app_model.get_odoo_series(), '7.0')
+
+        # Test development/alpha version
+        with patch('odoo.release.version', '19.0a1'):
+            self.assertEqual(app_model.get_odoo_series(), '19.0')
+
+
 

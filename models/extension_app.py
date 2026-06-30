@@ -50,9 +50,7 @@ class OdooAppParser(HTMLParser):
             if href.startswith('/apps/modules/'):
                 self.current_app['detail_url'] = href
                 parts = href.strip('/').split('/')
-                if len(parts) >= 3:
-                    self.current_app['tech_name'] = parts[2]
-                elif len(parts) >= 1:
+                if parts:
                     self.current_app['tech_name'] = parts[-1]
                     
         # Extract summary
@@ -148,9 +146,14 @@ class ExtensionApp(models.TransientModel):
 
     @api.model
     def get_odoo_series(self):
-        version = getattr(odoo, 'release', None) and getattr(odoo.release, 'version', '19.0')
-        match = re.match(r'^(\d+\.\d+)', str(version))
-        return match.group(1) if match else '19.0'
+        try:
+            import odoo.release
+            version = odoo.release.version
+        except ImportError:
+            version = '19.0'
+        # Extract the first sequence of digits (e.g. '18' from 'saas~18.3' or '18.0') and append '.0'
+        match = re.search(r'(\d+)', str(version))
+        return f"{match.group(1)}.0" if match else '19.0'
 
     @api.model
     def _scrape_apps(self, query=""):
@@ -169,12 +172,22 @@ class ExtensionApp(models.TransientModel):
             }
         )
         
+        import ssl
         try:
-            with urllib.request.urlopen(req, timeout=15) as response:
+            # First try with default secure SSL context
+            context = ssl.create_default_context()
+            with urllib.request.urlopen(req, timeout=15, context=context) as response:
                 html_content = response.read().decode('utf-8', errors='ignore')
-        except Exception as e:
-            _logger.warning("Failed to fetch Odoo App Store listings: %s", e)
-            return []
+        except Exception as ssl_e:
+            _logger.warning("Failed to fetch Odoo App Store listings with secure SSL: %s. Retrying with unverified context...", ssl_e)
+            try:
+                # Fallback to unverified SSL context if standard SSL verification fails
+                unverified_context = ssl._create_unverified_context()
+                with urllib.request.urlopen(req, timeout=15, context=unverified_context) as response:
+                    html_content = response.read().decode('utf-8', errors='ignore')
+            except Exception as e:
+                _logger.error("Failed to fetch Odoo App Store listings: %s", e)
+                return []
             
         parser = OdooAppParser()
         try:
