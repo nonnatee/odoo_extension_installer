@@ -24,9 +24,18 @@
                 <!-- STATE: REVIEW -->
                 <div invisible="state != 'review'">
                     <div class="alert alert-info" role="alert">
-                        Please review the module(s) found in the archive and check for any missing dependencies before confirming the installation.
+                        Please select the modules you want to install. Missing third-party dependencies will be automatically searched and downloaded from the Odoo App Store.
                     </div>
-                    <field name="review_message" widget="html"/>
+                    <field name="module_ids" readonly="0">
+                        <list editable="bottom" create="false" delete="false">
+                            <field name="install"/>
+                            <field name="tech_name" readonly="1"/>
+                            <field name="title" readonly="1"/>
+                            <field name="version" readonly="1"/>
+                            <field name="depends_str" readonly="1"/>
+                            <field name="status" widget="badge" decoration-success="status == 'ok'" decoration-warning="status == 'missing'" readonly="1"/>
+                        </list>
+                    </field>
                     <group string="Destination">
                         <field name="target_path" readonly="1"/>
                     </group>

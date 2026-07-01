@@ -133,5 +133,138 @@ class TestExtensionInstaller(TransactionCase):
         with patch('odoo.release.version', '19.0a1'):
             self.assertEqual(app_model.get_odoo_series(), '19.0')
 
+    def test_selective_installation(self):
+        """Test that only selected modules in the wizard are extracted and installed."""
+        import tempfile
+        import zipfile
+        import io
+        import base64
+        import shutil
+        
+        # 1. Create a dummy target directory
+        target_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, target_dir)
+        
+        # 2. Create a mock ZIP file in memory containing two dummy Odoo modules
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w') as zf:
+            # Module A
+            zf.writestr('module_a/__manifest__.py', "{'name': 'Module A', 'depends': ['base']}")
+            zf.writestr('module_a/main.py', "# Code for A")
+            # Module B
+            zf.writestr('module_b/__manifest__.py', "{'name': 'Module B', 'depends': ['base']}")
+            zf.writestr('module_b/main.py', "# Code for B")
+            
+        zip_data = base64.b64encode(zip_buffer.getvalue())
+        
+        # 3. Create install wizard
+        wizard = self.env['extension.install.wizard'].create({
+            'source_type': 'zip',
+            'zip_file': zip_data,
+            'zip_filename': 'test_modules.zip',
+            'target_path': target_dir,
+        })
+        
+        # 4. Step 1: Review & Verify
+        wizard.action_download_and_review()
+        self.assertEqual(wizard.state, 'review')
+        self.assertEqual(len(wizard.module_ids), 2)
+        
+        # 5. Deselect Module B (only install Module A)
+        module_a = wizard.module_ids.filtered(lambda m: m.tech_name == 'module_a')
+        module_b = wizard.module_ids.filtered(lambda m: m.tech_name == 'module_b')
+        self.assertTrue(module_a)
+        self.assertTrue(module_b)
+        
+        module_a.write({'install': True})
+        module_b.write({'install': False})
+        
+        # 6. Step 2: Extract & Install
+        wizard.action_install_confirm()
+        self.assertEqual(wizard.state, 'done')
+        
+        # 7. Assertions
+        # Module A must exist in target_dir
+        dest_a = os.path.join(target_dir, 'module_a')
+        self.assertTrue(os.path.exists(dest_a))
+        self.assertTrue(os.path.exists(os.path.join(dest_a, '__manifest__.py')))
+        
+        # Module B must NOT exist in target_dir
+        dest_b = os.path.join(target_dir, 'module_b')
+        self.assertFalse(os.path.exists(dest_b))
+
+    def test_dependency_auto_resolution(self):
+        """Test that missing third-party dependencies are searched and auto-installed."""
+        from unittest.mock import patch
+        import tempfile
+        import zipfile
+        import io
+        import base64
+        import shutil
+        
+        target_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, target_dir)
+        
+        # Create ZIP payload with a module that depends on 'missing_dep'
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w') as zf:
+            zf.writestr('my_module/__manifest__.py', "{'name': 'My Module', 'depends': ['missing_dep']}")
+            
+        zip_data = base64.b64encode(zip_buffer.getvalue())
+        
+        # Mock Odoo Apps search and urllib request to mock App Store dependency resolution
+        mock_app_data = [{
+            'tech_name': 'missing_dep',
+            'name': 'Missing Dependency',
+            'detail_url': '/apps/modules/18.0/missing_dep',
+        }]
+        
+        # Mock details page HTML containing a fake GitHub URL
+        mock_html = """
+        <html>
+            <body>
+                <td><b>Website</b></td>
+                <td><a href="https://github.com/test_owner/missing_dep">Repo Link</a></td>
+            </body>
+        </html>
+        """
+        
+        # Mock zip payload of the dependency
+        dep_zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(dep_zip_buffer, 'w') as zf:
+            zf.writestr('test_owner-missing_dep-hash/missing_dep/__manifest__.py', "{'name': 'Missing Dep', 'depends': ['base']}")
+            zf.writestr('test_owner-missing_dep-hash/missing_dep/utils.py', "# Utility code")
+            
+        dep_zip_payload = dep_zip_buffer.getvalue()
+        
+        wizard = self.env['extension.install.wizard'].create({
+            'source_type': 'zip',
+            'zip_file': zip_data,
+            'zip_filename': 'my_module.zip',
+            'target_path': target_dir,
+        })
+        
+        # Review
+        wizard.action_download_and_review()
+        self.assertEqual(wizard.module_ids[0].status, 'missing')
+        
+        # Install and resolve
+        with patch.object(self.env['extension.app'], '_scrape_apps', return_value=mock_app_data), \
+             patch('urllib.request.urlopen') as mock_urlopen:
+             
+             # First call returns detail page, second returns dependency zipball
+             mock_urlopen.return_value.__enter__.return_value.read.side_effect = [
+                 mock_html.encode('utf-8'),
+                 dep_zip_payload
+             ]
+             
+             wizard.action_install_confirm()
+             
+        # Assertions: both my_module and missing_dep should be in target_dir
+        self.assertTrue(os.path.exists(os.path.join(target_dir, 'my_module')))
+        self.assertTrue(os.path.exists(os.path.join(target_dir, 'missing_dep')))
+        self.assertTrue(os.path.exists(os.path.join(target_dir, 'missing_dep', 'utils.py')))
+
+
 
 
