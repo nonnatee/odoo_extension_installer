@@ -144,8 +144,8 @@ class ExtensionInstallWizard(models.TransientModel):
                         headers={'User-Agent': 'Mozilla/5.0 (Odoo Extension Installer)'}
                     )
                     import ssl
-                    context = ssl._create_unverified_context()
-                    with urllib.request.urlopen(req, timeout=30, context=context) as response:
+                    ssl_ctx = ssl._create_unverified_context()
+                    with urllib.request.urlopen(req, timeout=30, context=ssl_ctx) as response:
                         zip_payload = response.read()
                 except urllib.error.URLError as e:
                     _logger.exception("GitHub download failed.")
@@ -353,8 +353,8 @@ class ExtensionInstallWizard(models.TransientModel):
             )
             try:
                 import ssl
-                context = ssl._create_unverified_context()
-                with urllib.request.urlopen(req, timeout=15, context=context) as response:
+                ssl_ctx = ssl._create_unverified_context()
+                with urllib.request.urlopen(req, timeout=15, context=ssl_ctx) as response:
                     html_content = response.read().decode('utf-8', errors='ignore')
             except Exception as e:
                 _logger.warning("Failed to fetch detail page for %s: %s", dep, e)
@@ -380,7 +380,7 @@ class ExtensionInstallWizard(models.TransientModel):
                     download_url,
                     headers={'User-Agent': 'Mozilla/5.0 (Odoo Extension Installer)'}
                 )
-                with urllib.request.urlopen(req_download, timeout=30, context=context) as response:
+                with urllib.request.urlopen(req_download, timeout=30, context=ssl_ctx) as response:
                     zip_payload = response.read()
                     
                 with zipfile.ZipFile(io.BytesIO(zip_payload)) as z:

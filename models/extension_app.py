@@ -175,15 +175,15 @@ class ExtensionApp(models.TransientModel):
         import ssl
         try:
             # First try with default secure SSL context
-            context = ssl.create_default_context()
-            with urllib.request.urlopen(req, timeout=15, context=context) as response:
+            ssl_ctx = ssl.create_default_context()
+            with urllib.request.urlopen(req, timeout=15, context=ssl_ctx) as response:
                 html_content = response.read().decode('utf-8', errors='ignore')
         except Exception as ssl_e:
             _logger.warning("Failed to fetch Odoo App Store listings with secure SSL: %s. Retrying with unverified context...", ssl_e)
             try:
                 # Fallback to unverified SSL context if standard SSL verification fails
-                unverified_context = ssl._create_unverified_context()
-                with urllib.request.urlopen(req, timeout=15, context=unverified_context) as response:
+                unverified_ssl_ctx = ssl._create_unverified_context()
+                with urllib.request.urlopen(req, timeout=15, context=unverified_ssl_ctx) as response:
                     html_content = response.read().decode('utf-8', errors='ignore')
             except Exception as e:
                 _logger.error("Failed to fetch Odoo App Store listings: %s", e)
